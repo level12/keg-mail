@@ -17,6 +17,7 @@ Usage
 
 
 Initialize Keg-Mail in you application
+
 .. code::
 
   import flask
@@ -32,7 +33,9 @@ Initialize Keg-Mail in you application
 
 
 Initialize the extension with the application
+
 .. code::
+
   @app_ready.connect
   def init_extensions(app):
       """Init custom extensions used by this application"""
@@ -41,7 +44,9 @@ Initialize the extension with the application
 
 
 Define email content
+
 .. code::
+
   import keg_mail
 
   hello_world_content = keg_mail.EmailContent(
@@ -51,7 +56,9 @@ Define email content
 
 
 Send the email
+
 .. code::
+
   from app import mail
   import app.emails as emails
   import keg_mail
@@ -68,6 +75,7 @@ Send the email
 
 
 Test the email
+
 .. code::
 
   from app import mail
