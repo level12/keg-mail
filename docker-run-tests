@@ -31,7 +31,7 @@ fi
 
 set -x
 docker run \
-    -v "$SRC_DPATH":/opt/src \
+    -v "$(pwd)":/opt/src \
     -v "$ARTIFACTS_DPATH":/opt/src/.ci/artifacts \
     -v "$TEST_REPORTS_DPATH":/opt/src/.ci/test-reports \
     level12/python-test-multi

@@ -7,14 +7,14 @@ README = open(osp.join(cdir, 'README.rst')).read()
 CHANGELOG = open(osp.join(cdir, 'CHANGELOG.rst')).read()
 
 setup(
-    name="lib",
+    name="KegMail",
     setup_requires=['setuptools_scm'],
     use_scm_version=True,
-    description="The starting porint for a keg library",
+    description="A mail sending library for keg applications",
     long_description='\n\n'.join((README, CHANGELOG)),
     author="Level 12 Developers",
     author_email="devteam@level12.io",
-    url='https://github.com/level12/keg-baselib',
+    url='https://github.com/level12/keg-mail',
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
@@ -26,5 +26,7 @@ setup(
     license='BSD',
     packages=find_packages(),
     zip_safe=True,
-    install_requires=[],
+    install_requires=[
+        'flask_mail',
+    ],
 )

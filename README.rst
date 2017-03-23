@@ -1,46 +1,80 @@
-KegBase Library
-###############
+Keg-Mail
+#########
 
+Keg-Mail is a basic wrapper around Flask-Mail which gives some added support for
+templates.
 
-This repository is the starting point for a Keg library. It makes some
-assumptions, for example that you want to support Python 2.7, 3.4, and 3.5, you
-want your line length to be 100, and a whole host of other things.
-
-The point being, you can start a new library much quicker now.
+It is not finished by any means and in some ways provides little additional
+benefit over Flask-Mail.
 
 
 Usage
 =====
 
-Clone the repo down.
-
 .. code::
 
-  $ git clone git@github.com:level12/keg-baselib
+  $ pip install keg-mail
 
 
-Then change some important things...
+Initialize Keg-Mail in you application
+.. code::
 
-setup.py:
-  - name
-  - install_requires
-  - url
-  - description
+  import flask
+  import keg_mail
+  from keg.signals import app_ready
+  from keg import Keg
 
+  bp = flask.blueprint('main', __name__)
+  mail = keg_mail.KegMail()
 
-tox.ini:
-  - change the folder that ``--cov`` points at
-
-lib:
-  - change the name of your library from lib to something a little more helpful,
-    though you could keep that name if you want to, though you might need to do
-    some extra stuff in setup.py
+  class App(Keg):
+    use_blueprints = [bp]
 
 
-Why not something else
-======================
+Initialize the extension with the application
+.. code::
+  @app_ready.connect
+  def init_extensions(app):
+      """Init custom extensions used by this application"""
 
-Git cloning is about as easy as it gets. Using cookie cutter tools has proven to
-be rather challenging. This gets you 95% of the way there, with very little
-effort. If you keep the git history as well, you can even track updates to this
-repo and merge them into your project over time.
+      mail.init_app(app)
+
+
+Define email content
+.. code::
+  import keg_mail
+
+  hello_world_content = keg_mail.EmailContent(
+    text='Hello {name}!'
+    html='<h1>Hello {name}!</h1>'
+  )
+
+
+Send the email
+.. code::
+  from app import mail
+  import app.emails as emails
+  import keg_mail
+
+  bp.route('/')
+  def index():
+      mail.send(
+          'you@something.com'
+          keg_mail.Email(
+            subject="Hello {name}!",
+            content=emails.hello_world_content,
+          ).format(name='You")
+      )
+
+
+Test the email
+.. code::
+
+  from app import mail
+
+  def test_send_mail():
+      with mail.record_messages() as outbox:
+          resp = app.test_client.get('/')
+          assert len(outbox) == 1
+          assert outbox[0].subject == "Hello You!"
+          assert outbox[0].body == "Hello You!"
