@@ -7,7 +7,7 @@ README = open(osp.join(cdir, 'README.rst')).read()
 CHANGELOG = open(osp.join(cdir, 'CHANGELOG.rst')).read()
 
 setup(
-    name="KegMail",
+    name="Keg-Mail",
     setup_requires=['setuptools_scm'],
     use_scm_version=True,
     description="A mail sending library for keg applications",
