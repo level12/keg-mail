@@ -1,4 +1,4 @@
-from cgi import escape as _escape_html
+from html import escape as _escape_html
 import logging
 import smtplib
 import socket

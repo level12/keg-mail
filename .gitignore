@@ -5,6 +5,8 @@
 build/
 dist/
 .ci/
+.idea/
+.python-version
 
 .coverage
 coverage.xml
