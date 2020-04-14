@@ -13,6 +13,7 @@ with open(osp.join(cdir, 'keg_mail', 'version.py')) as version_fp:
 setup(
     name="Keg-Mail",
     description="A mail sending library for keg applications",
+    version=version['VERSION'],
     long_description='\n\n'.join((README, CHANGELOG)),
     author="Level 12 Developers",
     author_email="devteam@level12.io",
