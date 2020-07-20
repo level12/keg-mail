@@ -1,7 +1,18 @@
+import json
 import logging
-import typing
 import uuid
 from datetime import timedelta
+from typing import (
+    Any,
+    BinaryIO,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
 import arrow
 import flask
@@ -11,7 +22,10 @@ from blazeutils.helpers import ensure_list
 from flask import current_app
 from ordered_set import OrderedSet
 
-from keg_mail.model import EmailLogStatus
+from keg_mail.model import (
+    EmailLogStatus,
+    MailLogMixin,
+)
 
 log = logging.getLogger(__name__)
 
@@ -20,11 +34,29 @@ class MailgunError(Exception):
     pass
 
 
+FileData = Union[BinaryIO, bytes]
+
+# Covers the data layouts that requests accepts while allowing multiple files with the same
+# multi-part field name
+RequestFile = Tuple[
+    str,  # field name
+    Union[
+        FileData,
+        # filename, file obj
+        Tuple[str, FileData],
+        # filename, file obj, content type
+        Tuple[str, FileData, str],
+        # filename, file obj, content type, custom headers
+        Tuple[str, FileData, str, Dict[str, Any]]
+    ]
+]
+
+
 class MailgunClient:
     api_root_url = 'https://api.mailgun.net/v3'
 
     def __init__(self, domain: str, api_key: str, testing: bool,
-                 log_entity_cls: typing.Optional[typing.Type[EmailLogStatus]] = None):
+                 log_entity_cls: Optional[Type[MailLogMixin]] = None):
         self.domain = domain
         self.api_key = api_key
         self.log_entity_cls = log_entity_cls
@@ -36,43 +68,47 @@ class MailgunClient:
     def _endpoint_url(self, endpoint: str):
         return '{}/{}/{}'.format(self.api_root_url, self.domain, endpoint.lstrip('/'))
 
-    def _request(self, endpoint: str, method: typing.Callable,
-                 body: typing.Optional[typing.Dict] = None,
-                 params: typing.Optional[typing.Dict] = None,
-                 files: typing.Optional[typing.List] = None,
+    def _request(self, endpoint: str, method: Callable,
+                 body: Optional[Dict] = None,
+                 params: Optional[Dict] = None,
+                 files: Optional[List[RequestFile]] = None,
                  allowed_status=200):
 
         url = endpoint if endpoint.startswith('http') else self._endpoint_url(endpoint)
         auth = self._get_auth()
 
         resp = method(url, data=body, params=params, auth=auth, files=files)
-        resp_data = resp.json()
         if resp.status_code != allowed_status:
-            raise MailgunError(resp_data)
+            raise MailgunError(resp.text)
+
+        try:
+            resp_data = resp.json()
+        except json.JSONDecodeError as err:
+            raise MailgunError(str(err))
+
         return resp_data
 
-    def _post_request(self, endpoint: str, body: typing.Dict,
-                      params: typing.Optional[typing.Dict] = None,
-                      files: typing.Optional[typing.List] = None, allowed_status=200):
+    def _post_request(self, endpoint: str, body: Dict,
+                      params: Optional[Dict] = None,
+                      files: Optional[List[RequestFile]] = None, allowed_status=200):
         return self._request(endpoint, requests.post, body, params, files, allowed_status)
 
-    def _get_request(self, endpoint: str, query_data: typing.Optional[typing.Dict] = None,
+    def _get_request(self, endpoint: str, query_data: Optional[Dict] = None,
                      allowed_status=200):
         return self._request(endpoint, requests.get, None, query_data,
                              allowed_status=allowed_status)
 
-    def _delete_request(self, endpoint: str, query_data: typing.Optional[typing.Dict] = None,
+    def _delete_request(self, endpoint: str, query_data: Optional[Dict] = None,
                         allowed_status=200):
         return self._request(endpoint, requests.delete, None, query_data,
                              allowed_status=allowed_status)
 
-    def _put_request(self, endpoint: str, body: typing.Dict,
-                     params: typing.Optional[typing.Dict] = None,
-                     files: typing.Optional[typing.List] = None, allowed_status=200):
+    def _put_request(self, endpoint: str, body: Dict,
+                     params: Optional[Dict] = None,
+                     files: Optional[List[RequestFile]] = None, allowed_status=200):
         return self._request(endpoint, requests.put, body, params, files, allowed_status)
 
-    def _ensure_unique_recipients(self, to: typing.List[str], cc: typing.List[str],
-                                  bcc: typing.List[str]):
+    def _ensure_unique_recipients(self, to: List[str], cc: List[str], bcc: List[str]):
         # We count on the recipients being unique per message_id so the same address in both the
         # "to" and "cc" fields is a problem.
         to = OrderedSet(to)  # Remove duplicates from "to" addresses
@@ -116,10 +152,13 @@ class MailgunClient:
         )
         return resp
 
-    def poll_events(self, after: typing.Optional[arrow.Arrow] = None,
+    def poll_events(self, after: Optional[arrow.Arrow] = None,
                     threshold=timedelta(minutes=30)):
         from keg.db import db
         import sqlalchemy as sa
+
+        if not self.log_entity_cls:
+            raise ValueError('KegMail must be configured with MAIL_LOG_ENTITY to use this feature')
 
         if after is None:
             after = db.session.query(
@@ -177,6 +216,9 @@ class MailgunClient:
 
     def update_message_status(self, event_data, _commit=True):
         from keg.db import db
+
+        if not self.log_entity_cls:
+            raise ValueError('KegMail must be configured with MAIL_LOG_ENTITY to use this feature')
 
         new_status = EmailLogStatus.from_mailgun_event(
             event_data['event'],

@@ -19,8 +19,9 @@ class WebhookBase(BaseView):
 
         hmac_digest = hmac.new(
             key=signing_key.encode(),
-            msg=('{}{}'.format(signature['timestamp'], signature['token'])).encode(),
-            digestmod=hashlib.sha256).hexdigest()
+            msg='{}{}'.format(signature['timestamp'], signature['token']).encode(),
+            digestmod=hashlib.sha256
+        ).hexdigest()
         return hmac.compare_digest(str(signature['signature']), str(hmac_digest))
 
     def post(self):
