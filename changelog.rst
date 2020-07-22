@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.2.1 released 2020-07-22
+-------------------------
+
+- Add support for Mailgun REST API and message status tracking (b3b4428_)
+
+.. _b3b4428: https://github.com/level12/keg-mail/commit/b3b4428
+
+
 0.2.0 released 2020-04-14
 -------------------------
 

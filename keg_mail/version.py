@@ -1,1 +1,1 @@
-VERSION = '0.2.0'  # noqa
+VERSION = '0.2.1'
