@@ -42,7 +42,7 @@ class WebhookBase(BaseView):
 class LogStatusWebhook(WebhookBase):
     def process_event(self, event_data):
         try:
-            keg.current_app.extensions['mail'].update_message_status(event_data)
+            keg.current_app.extensions['mail'].mailgun_update_message_status(event_data)
         except Exception:
             # Ensure any row locks are released
             db.session.rollback()
