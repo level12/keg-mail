@@ -3,6 +3,7 @@ import io
 import sys
 import urllib.parse
 from datetime import timedelta
+from decimal import Decimal
 from operator import attrgetter
 from unittest import mock
 
@@ -407,4 +408,14 @@ class TestMailgunClient:
         db.session.expire(log_ent)
         assert log_ent.status == keg_mail.EmailLogStatus.rejected
         assert log_ent.status_updated == now.shift(seconds=2)
+        assert log_ent.error_detail == 'Some Reason'
+
+        # accepts decimal for timestamp
+        event_data['timestamp'] = Decimal.from_float(
+            log_ent.status_updated.shift(seconds=1).float_timestamp
+        )
+        client.update_message_status(event_data)
+        db.session.expire(log_ent)
+        assert log_ent.status == keg_mail.EmailLogStatus.rejected
+        assert log_ent.status_updated == now.shift(seconds=3)
         assert log_ent.error_detail == 'Some Reason'

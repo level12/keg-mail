@@ -248,7 +248,7 @@ class MailgunClient:
                 db.session.rollback()  # release row lock
             return
 
-        timestamp = arrow.get(event_data['timestamp'])
+        timestamp = arrow.get(float(event_data['timestamp']))
         if log_entry.status_updated and log_entry.status_updated >= timestamp:
             if _commit:
                 db.session.rollback()  # release row lock
