@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.2.3 released 2020-07-22
+-------------------------
+
+- Handle timestamps parsed as decimals in Mailgun event JSON (6a03528_)
+
+.. _6a03528: https://github.com/level12/keg-mail/commit/6a03528
+
+
 0.2.2 released 2020-07-22
 -------------------------
 
