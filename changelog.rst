@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.2.2 released 2020-07-22
+-------------------------
+
+- Fix bug in LogStatusWebhook view mixin (8a3ffde_)
+
+.. _8a3ffde: https://github.com/level12/keg-mail/commit/8a3ffde
+
+
 0.2.1 released 2020-07-22
 -------------------------
 
