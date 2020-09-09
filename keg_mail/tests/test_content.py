@@ -52,6 +52,29 @@ class TestEmail(object):
         self.content = content.EmailContent('{a}', '{a}')
         self.content_b = content.EmailContent('{b}', '{b}')
 
+    def test_validate_address(self):
+        validate_address = content.Email.validate_address
+
+        assert validate_address('user@example.com') is True
+        assert validate_address('user@gmail.com') is True
+
+        assert validate_address('') is False
+        assert validate_address('user@invalid') is False
+        assert validate_address('invalid') is False
+
+        assert validate_address('user@example.con') is True
+        assert validate_address('user@gmaol.com') is True
+
+    def test_address_might_be_invalid(self):
+        address_might_be_invalid = content.Email.address_might_be_invalid
+
+        assert address_might_be_invalid('user@example.con') is True
+        assert address_might_be_invalid('user@gmaol.com') is True
+
+        assert address_might_be_invalid('user@valid.com') is False
+        assert address_might_be_invalid('user@example.com') is False
+        assert address_might_be_invalid('user@gmail.com') is False
+
     def test_equality(self):
         # Same
         assert (content.Email('a', self.content, 'a') ==
