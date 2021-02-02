@@ -8,7 +8,6 @@ from flask_mail import Message
 from flask import current_app
 import pymailcheck
 import validator_collection
-import validator_collection.errors
 
 import keg_mail.utils as utils
 
@@ -139,10 +138,20 @@ class Email(object):
 
     @classmethod
     def address_might_be_invalid(cls, address):
+        """Returns `True` if the address is or could be invalid, `False` otherwise"""
         if not cls.validate_address(address):
             return True
 
-        return bool(pymailcheck.suggest(address))
+        return bool(cls.get_invalid_address_suggestions(address))
+
+    @classmethod
+    def get_invalid_address_suggestions(cls, address):
+        """Returns a suggested address if one exists, else `None`"""
+        suggestion = pymailcheck.suggest(address)
+        if suggestion is False:
+            return None
+
+        return suggestion['full']
 
     def format(self, *args, **kwargs):
         select_text = lambda item: getattr(item, 'text', item)  # noqa

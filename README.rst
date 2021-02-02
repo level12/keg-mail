@@ -16,7 +16,7 @@ Usage
   $ pip install keg-mail
 
 
-Initialize Keg-Mail in you application
+Initialize Keg-Mail in your application
 
 .. code::
 
@@ -53,6 +53,23 @@ Define email content
     text='Hello {name}!'
     html='<h1>Hello {name}!</h1>'
   )
+
+
+Validate the recipient
+
+.. code::
+
+  import keg_mail.content
+
+  address = "user@example.com"
+  if keg_mail.content.Email.address_might_be_invalid(address):
+    # the address might be invalid (it might be incomplete, or there
+    # may be a typo)
+    . . .
+
+  else:
+    # address should be good, send the email
+    . . .
 
 
 Send the email
