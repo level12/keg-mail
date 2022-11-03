@@ -27,7 +27,7 @@ def escape_html(content):
     return EmailContent(html=_escape_html(content), text=content)
 
 
-def send_email(recipient, email):
+def send_email(recipient, email, **kwargs):
     """Sends an `Email` to a recipient.
 
     :param recipient: is an email address.
@@ -49,7 +49,7 @@ def send_email(recipient, email):
     )
 
     try:
-        mail_engine.send(message)
+        mail_engine.send(message, **kwargs)
     except (socket.gaierror, socket.error):  # pragma: no cover
         raise SendEmailError('SMTP Connection error')
     except smtplib.SMTPAuthenticationError:  # pragma: no cover
