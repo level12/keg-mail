@@ -65,8 +65,8 @@ Send the email
 
   bp.route('/')
   def index():
-      mail.send(
-          'you@something.com'
+      mail.send_email(
+          'you@something.com',
           keg_mail.Email(
             subject="Hello {name}!",
             content=emails.hello_world_content,
