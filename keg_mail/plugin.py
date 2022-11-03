@@ -55,9 +55,10 @@ class _MailMixin(flask_mail._MailMixin):
             return
         self.mailgun_client.update_message_status(event_data)
 
-    def send(self, message):
+    def send(self, message, **kwargs):
         if self.mailgun_client:
-            return self.mailgun_send(message)
+            mailgun_opts = kwargs.pop('mailgun_opts', None)
+            return self.mailgun_send(message, mailgun_opts)
 
         if message.extra_headers is None:
             message.extra_headers = {}
