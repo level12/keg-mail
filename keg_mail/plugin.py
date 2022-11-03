@@ -18,8 +18,8 @@ log = logging.getLogger(__name__)
 
 
 class _MailMixin(flask_mail._MailMixin):
-    def mailgun_send(self, message):
-        return self.mailgun_client.send(message)
+    def mailgun_send(self, message, mailgun_opts=None):
+        return self.mailgun_client.send(message, mailgun_opts)
 
     def mailgun_sync_webhooks(self):
         return self.mailgun_client.sync_webhooks(self.mailgun_webhooks)

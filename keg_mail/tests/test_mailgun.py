@@ -53,6 +53,31 @@ class TestMailgunClient:
         assert body['html'] == ['<blink>very important message</blink>']
         assert 'attachment' not in body
 
+    def test_send_with_mailgun_opts(self, requests_mock):
+        requests_mock.post('https://api.mailgun.net/v3/example.com/messages',
+                           json={'response': 'ok'})
+
+        client = MailgunClient(domain='example.com', api_key='foo', testing=False)
+        message = flask_mail.Message(
+            subject='RE: xyz',
+            recipients=['bob@example.com', 'joe@example.com'],
+            body='very important message',
+            html='<blink>very important message</blink>',
+        )
+        mailgun_opts = {'o:tag': ['one_tag', 'another_tag']}
+        resp = client.send(message, mailgun_opts=mailgun_opts)
+
+        assert resp == {'response': 'ok'}
+
+        assert requests_mock.call_count == 1
+
+        req = requests_mock.request_history[0]
+        body = urllib.parse.parse_qs(req.text)
+
+        assert body['to'] == ['bob@example.com', 'joe@example.com']
+        assert body['o:tag'] == ['one_tag', 'another_tag']
+        assert 'attachment' not in body
+
     def test_send_attachments(self, requests_mock):
         requests_mock.post('https://api.mailgun.net/v3/example.com/messages',
                            json={'response': 'ok'})

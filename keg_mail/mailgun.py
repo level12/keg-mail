@@ -117,7 +117,7 @@ class MailgunClient:
 
         return list(to), list(cc), list(bcc)
 
-    def send(self, message: flask_mail.Message):
+    def send(self, message: flask_mail.Message, mailgun_opts: Dict = None):
         to, cc, bcc = self._ensure_unique_recipients(
             ensure_list(message.recipients),
             ensure_list(message.cc),
@@ -135,6 +135,8 @@ class MailgunClient:
             'v:message_uuid': message_uuid,
             'o:testmode': 'yes' if self.testing else 'no'
         }
+
+        request_body.update(mailgun_opts or {})
 
         files = None
         if message.attachments:
