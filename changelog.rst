@@ -1,6 +1,16 @@
 Changelog
 =========
 
+0.2.4 released 2022-11-10
+-------------------------
+
+- allow additional mailgun API options to be sent through send (d35e23d_)
+- update CI setup and add python 3.10 (5552cd2_)
+
+.. _d35e23d: https://github.com/level12/keg-mail/commit/d35e23d
+.. _5552cd2: https://github.com/level12/keg-mail/commit/5552cd2
+
+
 0.2.3 released 2020-07-22
 -------------------------
 
