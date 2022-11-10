@@ -16,7 +16,7 @@ Usage
   $ pip install keg-mail
 
 
-Initialize Keg-Mail in you application
+Initialize Keg-Mail in your application
 
 .. code::
 
@@ -65,8 +65,8 @@ Send the email
 
   bp.route('/')
   def index():
-      mail.send(
-          'you@something.com'
+      mail.send_email(
+          'you@something.com',
           keg_mail.Email(
             subject="Hello {name}!",
             content=emails.hello_world_content,
@@ -86,3 +86,21 @@ Test the email
           assert len(outbox) == 1
           assert outbox[0].subject == "Hello You!"
           assert outbox[0].body == "Hello You!"
+
+
+Mailgun-specific options
+------------------------
+
+Mailgun supports various options such as tagging, user-defined variables, etc.
+These can be added via a ``mailgun_opts`` dictionary that can be passed to the
+app's mail engine's ``send`` method directly:
+
+.. code::
+
+    flask.current_app.mail.send(
+        msg,
+        mailgun_opts={
+            'v:user_name': 'John Doe',
+            'v:user_id': 100,
+        },
+    )
