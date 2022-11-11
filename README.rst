@@ -55,6 +55,23 @@ Define email content
   )
 
 
+Validate the recipient
+
+.. code::
+
+  import keg_mail.content
+
+  address = "user@example.com"
+  if keg_mail.content.Email.address_might_be_invalid(address):
+    # the address might be invalid (it might be incomplete, or there
+    # may be a typo)
+    . . .
+
+  else:
+    # address should be good, send the email
+    . . .
+
+
 Send the email
 
 .. code::

@@ -35,6 +35,8 @@ setup(
         'Keg',
         'SQLAlchemy-Utils',
         'arrow',
+        'pymailcheck',
+        'validator-collection',
     ],
     extras_require={
         'mailgun': [

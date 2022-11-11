@@ -6,6 +6,8 @@ import textwrap
 
 from flask_mail import Message
 from flask import current_app
+import pymailcheck
+import validator_collection
 
 import keg_mail.utils as utils
 
@@ -123,6 +125,33 @@ class Email(object):
         self.subject = textwrap.dedent(subject).strip()
         self.content = content
         self.type_ = type_
+
+    @classmethod
+    def validate_address(cls, address):
+        """Returns `True` if the address looks like a valid e-mail address"""
+        try:
+            validator_collection.email(address)
+            return True
+
+        except ValueError:
+            return False
+
+    @classmethod
+    def address_might_be_invalid(cls, address):
+        """Returns `True` if the address is or could be invalid, `False` otherwise"""
+        if not cls.validate_address(address):
+            return True
+
+        return bool(cls.get_invalid_address_suggestions(address))
+
+    @classmethod
+    def get_invalid_address_suggestions(cls, address):
+        """Returns a suggested address if one exists, else `None`"""
+        suggestion = pymailcheck.suggest(address)
+        if suggestion is False:
+            return None
+
+        return suggestion['full']
 
     def format(self, *args, **kwargs):
         select_text = lambda item: getattr(item, 'text', item)  # noqa
