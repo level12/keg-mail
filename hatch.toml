@@ -1,0 +1,9 @@
+## Build
+[build]
+dev-mode-dirs = ['src']
+
+
+## Version
+[version]
+source = 'regex'
+path = 'src/keg_mail/version.py'
