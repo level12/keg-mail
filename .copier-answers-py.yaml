@@ -12,7 +12,7 @@ gh_org: level12
 gh_repo: keg-mail
 project_name: Keg-Mail
 py_module: keg_mail
-python_version: '3.12'
+python_version: '3.14'
 python_version_min: '3.10'
 script_name: ''
 use_circleci: false
