@@ -4,8 +4,10 @@ import smtplib
 import socket
 import textwrap
 
+from email_validator import EmailNotValidError, validate_email
 from flask import current_app
 from flask_mail import Message
+import pymailcheck
 
 import keg_mail.utils as utils
 
@@ -123,6 +125,32 @@ class Email:
         self.subject = textwrap.dedent(subject).strip()
         self.content = content
         self.type_ = type_
+
+    @classmethod
+    def validate_address(cls, address):
+        """Return whether the address has valid email syntax."""
+        try:
+            validate_email(address, check_deliverability=False)
+        except EmailNotValidError:
+            return False
+        return True
+
+    @classmethod
+    def address_might_be_invalid(cls, address):
+        """Return whether the address is invalid or resembles a common typo."""
+        if not cls.validate_address(address):
+            return True
+
+        return cls.get_invalid_address_suggestions(address) is not None
+
+    @classmethod
+    def get_invalid_address_suggestions(cls, address):
+        """Return a suggested address for a likely typo, if one exists."""
+        suggestion = pymailcheck.suggest(address)
+        if suggestion is False:
+            return None
+
+        return suggestion['full']
 
     def format(self, *args, **kwargs):
         select_text = lambda item: getattr(item, 'text', item)

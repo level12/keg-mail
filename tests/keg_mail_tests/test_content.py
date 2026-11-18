@@ -51,6 +51,50 @@ class TestEmail:
         self.content = content.EmailContent('{a}', '{a}')
         self.content_b = content.EmailContent('{b}', '{b}')
 
+    def test_validate_address(self):
+        validate_address = content.Email.validate_address
+
+        assert validate_address('user@example.com') is True
+        assert validate_address('user@gmail.com') is True
+        assert validate_address('user+foo@example.com') is True
+
+        assert validate_address('') is False
+        assert validate_address('user@invalid') is False
+        assert validate_address('invalid') is False
+
+        # These are syntactically valid, even though they are likely typos.
+        assert validate_address('user@example.con') is True
+        assert validate_address('user@gmaol.com') is True
+
+    def test_address_might_be_invalid(self):
+        address_might_be_invalid = content.Email.address_might_be_invalid
+
+        assert address_might_be_invalid('') is True
+        assert address_might_be_invalid('user@invalid') is True
+        assert address_might_be_invalid('invalid') is True
+
+        assert address_might_be_invalid('user@example.con') is True
+        assert address_might_be_invalid('user@gmaol.com') is True
+
+        assert address_might_be_invalid('user+foo@example.com') is False
+        assert address_might_be_invalid('user@valid.com') is False
+        assert address_might_be_invalid('user@example.com') is False
+        assert address_might_be_invalid('user@gmail.com') is False
+
+    def test_get_invalid_address_suggestions(self):
+        get_suggestions = content.Email.get_invalid_address_suggestions
+
+        assert get_suggestions('') is None
+        assert get_suggestions('user@example.com') is None
+        assert get_suggestions('user@gmail.com') is None
+        assert get_suggestions('user+foo@example.com') is None
+
+        assert get_suggestions('user@example.con') == 'user@example.com'
+        assert get_suggestions('user@gmai.com') == 'user@gmail.com'
+
+        # pymailcheck can reasonably interpret this as either common domain.
+        assert get_suggestions('user@gmaol.com') in ('user@gmail.com', 'user@aol.com')
+
     def test_equality(self):
         # Same
         assert content.Email('a', self.content, 'a') == content.Email('a', self.content, 'a')

@@ -26,8 +26,10 @@ classifiers = [
 ]
 dependencies = [
     'arrow',
+    'email-validator>=2',
     'flask-mail>=0.10.0',
     'Keg',
+    'pymailcheck',
     'SQLAlchemy-Utils',
 ]
 

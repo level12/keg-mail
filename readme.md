@@ -45,6 +45,20 @@ hello_world_content = keg_mail.EmailContent(
 )
 ```
 
+Validate a recipient before sending:
+
+```python
+import keg_mail
+
+address = 'user@example.com'
+if keg_mail.Email.address_might_be_invalid(address):
+    # The address is invalid or resembles a common typo.
+    suggestion = keg_mail.Email.get_invalid_address_suggestions(address)
+else:
+    # The address has valid syntax and does not resemble a common typo.
+    suggestion = None
+```
+
 Send the email:
 
 ```python

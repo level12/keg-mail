@@ -7,6 +7,7 @@ Unreleased
 - modernize packaging and development tooling with Coppy, uv, Nox, prek, and
   GitHub Actions
 - support and test Python 3.12 through 3.14
+- add email address syntax validation and typo suggestions
 
 
 0.3.1 released 2024-06-21
