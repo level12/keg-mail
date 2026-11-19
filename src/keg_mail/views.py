@@ -1,5 +1,7 @@
 import hashlib
 import hmac
+import math
+import time
 
 import flask
 import keg
@@ -14,20 +16,59 @@ __all__ = [
 
 
 class WebhookBase(BaseView):
+    signature_max_age_seconds = 5 * 60
+    timestamp_future_tolerance_seconds = 60
+
     def verify(self, signing_key, data):
-        signature = data['signature']
+        if not isinstance(signing_key, str) or not signing_key.strip():
+            return False
+        if not isinstance(data, dict):
+            return False
+
+        signature = data.get('signature')
+        event_data = data.get('event-data')
+        if not isinstance(signature, dict) or not isinstance(event_data, dict):
+            return False
+
+        signature_fields = (
+            signature.get('timestamp'),
+            signature.get('token'),
+            signature.get('signature'),
+        )
+        if not all(isinstance(value, str) and value for value in signature_fields):
+            return False
 
         hmac_digest = hmac.new(
             key=signing_key.encode(),
             msg='{}{}'.format(signature['timestamp'], signature['token']).encode(),
             digestmod=hashlib.sha256,
         ).hexdigest()
-        return hmac.compare_digest(str(signature['signature']), str(hmac_digest))
+        if not hmac.compare_digest(str(signature['signature']), str(hmac_digest)):
+            return False
+
+        try:
+            signature_timestamp = float(signature['timestamp'])
+            event_timestamp = float(event_data['timestamp'])
+        except (KeyError, TypeError, ValueError):
+            return False
+
+        if not math.isfinite(signature_timestamp) or not math.isfinite(event_timestamp):
+            return False
+
+        now = time.time()
+        if signature_timestamp < now - self.signature_max_age_seconds:
+            return False
+        if signature_timestamp > now + self.timestamp_future_tolerance_seconds:
+            return False
+        latest_event_timestamp = (
+            min(signature_timestamp, now) + self.timestamp_future_tolerance_seconds
+        )
+        return event_timestamp <= latest_event_timestamp
 
     def post(self):
-        data = flask.request.json
+        data = flask.request.get_json(silent=True)
 
-        signing_key = keg.current_app.config['MAIL_MAILGUN_WEBHOOK_KEY']
+        signing_key = keg.current_app.config.get('MAIL_MAILGUN_WEBHOOK_KEY')
         if not self.verify(signing_key, data):
             flask.abort(403)
 

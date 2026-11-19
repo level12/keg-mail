@@ -7,6 +7,7 @@ from typing import (
     BinaryIO,
     Union,
 )
+from urllib.parse import urlsplit
 import uuid
 
 import arrow
@@ -50,6 +51,7 @@ RequestFile = tuple[
 
 class MailgunClient:
     api_root_url = 'https://api.mailgun.net/v3'
+    request_timeout = (5, 30)
 
     def __init__(
         self,
@@ -69,6 +71,23 @@ class MailgunClient:
     def _endpoint_url(self, endpoint: str):
         return '{}/{}/{}'.format(self.api_root_url, self.domain, endpoint.lstrip('/'))
 
+    def _is_api_url(self, url: str):
+        expected = urlsplit(self.api_root_url)
+        candidate = urlsplit(url)
+        try:
+            expected_port = expected.port or (443 if expected.scheme == 'https' else 80)
+            candidate_port = candidate.port or (443 if candidate.scheme == 'https' else 80)
+        except ValueError:
+            return False
+
+        return (
+            candidate.scheme == expected.scheme
+            and candidate.hostname == expected.hostname
+            and candidate_port == expected_port
+            and candidate.username is None
+            and candidate.password is None
+        )
+
     def _request(
         self,
         endpoint: str,
@@ -80,9 +99,18 @@ class MailgunClient:
     ):
 
         url = endpoint if endpoint.startswith('http') else self._endpoint_url(endpoint)
+        if not self._is_api_url(url):
+            raise MailgunError('Refusing request to a URL outside the Mailgun API origin')
         auth = self._get_auth()
 
-        resp = method(url, data=body, params=params, auth=auth, files=files)
+        resp = method(
+            url,
+            data=body,
+            params=params,
+            auth=auth,
+            files=files,
+            timeout=self.request_timeout,
+        )
         if resp.status_code != allowed_status:
             raise MailgunError(resp.text)
 
@@ -234,10 +262,7 @@ class MailgunClient:
                 break
 
             # Load the next page
-            resp = requests.get(next_url, auth=self._get_auth())
-            json_resp = resp.json()
-            if resp.status_code != 200:
-                raise MailgunError(json_resp)
+            json_resp = self._get_request(next_url)
 
     def update_message_status(self, event_data, _commit=True):
         from keg.db import db
