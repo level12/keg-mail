@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.20261119.1 released 2026-11-19
+--------------------------------
+
+- modernize packaging and development tooling with Coppy, uv, Nox, prek, and
+  GitHub Actions
+- support and test Python 3.12 through 3.15
+- add email address syntax validation and typo suggestions
+
+
 0.3.1 released 2024-06-21
 -------------------------
 
