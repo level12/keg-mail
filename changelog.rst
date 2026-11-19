@@ -6,7 +6,7 @@ Unreleased
 
 - modernize packaging and development tooling with Coppy, uv, Nox, prek, and
   GitHub Actions
-- support and test Python 3.12 through 3.14
+- support and test Python 3.12 through 3.15
 - add email address syntax validation and typo suggestions
 
 
