@@ -11,14 +11,39 @@ import arrow
 import flask_mail
 from keg.db import db
 import keg_mail_ta.model.entities as ents
+import pytest
 
 import keg_mail
-from keg_mail.mailgun import MailgunClient
+from keg_mail.mailgun import MailgunClient, MailgunError
 
 
 class TestMailgunClient:
     def setup_method(self, _):
         ents.MailLog.delete_cascaded()
+
+    def test_requests_have_timeout(self):
+        response = mock.Mock(status_code=200)
+        response.json.return_value = {'response': 'ok'}
+        client = MailgunClient(domain='example.com', api_key='foo', testing=False)
+
+        with mock.patch('keg_mail.mailgun.requests.get', return_value=response) as m_get:
+            result = client._get_request('events')
+
+        assert result == {'response': 'ok'}
+        assert m_get.call_args.kwargs['timeout'] == client.request_timeout
+
+    def test_rejects_authenticated_request_to_external_url(self):
+        response = mock.Mock(status_code=200)
+        response.json.return_value = {'response': 'ok'}
+        client = MailgunClient(domain='example.com', api_key='foo', testing=False)
+
+        with (
+            mock.patch('keg_mail.mailgun.requests.get', return_value=response) as m_get,
+            pytest.raises(MailgunError, match='outside the Mailgun API origin'),
+        ):
+            client._get_request('https://attacker.example/events')
+
+        m_get.assert_not_called()
 
     def test_send(self, requests_mock):
         requests_mock.post(
