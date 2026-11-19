@@ -1,6 +1,15 @@
 Changelog
 =========
 
+0.20261119.2 released 2026-11-19
+--------------------------------
+
+- harden Mailgun webhook verification against stale or future timestamps,
+  missing signing keys, and malformed request bodies
+- add timeouts to Mailgun API requests and restrict authenticated requests to
+  the configured Mailgun API origin
+
+
 0.20261119.1 released 2026-11-19
 --------------------------------
 
