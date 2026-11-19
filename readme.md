@@ -1,6 +1,7 @@
 # Keg-Mail
 
 [![nox](https://github.com/level12/keg-mail/actions/workflows/nox.yaml/badge.svg)](https://github.com/level12/keg-mail/actions/workflows/nox.yaml)
+[![codecov](https://codecov.io/gh/level12/keg-mail/branch/master/graph/badge.svg)](https://codecov.io/gh/level12/keg-mail)
 
 Keg-Mail is a basic wrapper around Flask-Mail which adds support for email
 templates and Mailgun integrations.
